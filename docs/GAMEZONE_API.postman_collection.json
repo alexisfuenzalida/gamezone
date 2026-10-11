@@ -1,8 +1,8 @@
 {
   "info": {
     "name": "GAMEZONE API",
-    "description": "API REST de la Plataforma de Torneos Gamer GAMEZONE (Django REST Framework).\n\nOrden sugerido: ejecutar primero las dos peticiones de '1. Autenticación'; guardan los tokens en las variables de la colección.",
-    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": "Ejecutar en orden: las primeras peticiones guardan tokens e ids en variables."
   },
   "variable": [
     {
@@ -19,7 +19,7 @@
     },
     {
       "key": "torneo_id",
-      "value": "1"
+      "value": ""
     },
     {
       "key": "videojuego_id",
@@ -28,486 +28,265 @@
   ],
   "item": [
     {
-      "name": "1. Autenticación",
-      "item": [
-        {
-          "name": "Obtener token (admin)",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test('200 OK', () => pm.response.to.have.status(200));",
-                  "pm.collectionVariables.set('token_admin', pm.response.json().token);"
-                ]
-              }
-            }
-          ],
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"username\": \"admin_demo\",\n  \"password\": \"Gamezone2026!\"\n}"
-            },
-            "url": "{{base_url}}/token/"
+      "name": "Token admin",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
           }
-        },
+        ],
+        "url": "{{base_url}}/token/",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"username\": \"admin_demo\",\n  \"password\": \"Gamezone2026!\"\n}"
+        }
+      },
+      "event": [
         {
-          "name": "Obtener token (jugador)",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test('200 OK', () => pm.response.to.have.status(200));",
-                  "pm.collectionVariables.set('token_jugador', pm.response.json().token);"
-                ]
-              }
-            }
-          ],
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"username\": \"neonviper\",\n  \"password\": \"Gamezone2026!\"\n}"
-            },
-            "url": "{{base_url}}/token/"
-          }
-        },
-        {
-          "name": "Obtener un videojuego (guarda su id)",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test('200 OK', () => pm.response.to.have.status(200));",
-                  "pm.collectionVariables.set('videojuego_id', pm.response.json().results[0].id);"
-                ]
-              }
-            }
-          ],
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Token {{token_admin}}"
-              }
-            ],
-            "url": "{{base_url}}/videojuegos/"
-          }
-        },
-        {
-          "name": "Credenciales inválidas (400)",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"username\": \"admin_demo\",\n  \"password\": \"incorrecta\"\n}"
-            },
-            "url": "{{base_url}}/token/"
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.collectionVariables.set('token_admin', pm.response.json().token);"
+            ]
           }
         }
       ]
     },
     {
-      "name": "2. Torneos (lectura)",
-      "item": [
+      "name": "Token jugador",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{base_url}}/token/",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"username\": \"neonviper\",\n  \"password\": \"Gamezone2026!\"\n}"
+        }
+      },
+      "event": [
         {
-          "name": "Listar torneos",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Token {{token_jugador}}"
-              }
-            ],
-            "url": "{{base_url}}/torneos/"
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.collectionVariables.set('token_jugador', pm.response.json().token);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Listar torneos",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Token {{token_jugador}}"
+          }
+        ],
+        "url": "{{base_url}}/torneos/"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.collectionVariables.set('videojuego_id', pm.response.json()[0].videojuego);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Filtrar torneos disponibles",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Token {{token_jugador}}"
+          }
+        ],
+        "url": "{{base_url}}/torneos/?estado=DISPONIBLE&min_inscritos=1"
+      }
+    },
+    {
+      "name": "Crear torneo (admin, 201)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Token {{token_admin}}"
           },
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test('200 OK', () => pm.response.to.have.status(200));",
-                  "pm.collectionVariables.set('torneo_id', pm.response.json().results[0].id);"
-                ]
-              }
-            }
-          ]
-        },
-        {
-          "name": "Filtrar: disponibles, más inscritos primero",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Token {{token_jugador}}"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/torneos/?estado=DISPONIBLE&orden=-num_inscritos",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "torneos",
-                ""
-              ],
-              "query": [
-                {
-                  "key": "estado",
-                  "value": "DISPONIBLE"
-                },
-                {
-                  "key": "orden",
-                  "value": "-num_inscritos"
-                }
-              ]
-            }
+          {
+            "key": "Content-Type",
+            "value": "application/json"
           }
-        },
+        ],
+        "url": "{{base_url}}/torneos/",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nombre\": \"Torneo creado desde Postman\",\n  \"videojuego\": {{videojuego_id}},\n  \"fecha\": \"2026-12-15T19:00:00-03:00\",\n  \"max_participantes\": 8,\n  \"descripcion\": \"Creado vía API\"\n}"
+        }
+      },
+      "event": [
         {
-          "name": "Filtrar: por fecha y mínimo de inscritos",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Token {{token_jugador}}"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/torneos/?fecha_desde=2026-01-01&min_inscritos=3",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "torneos",
-                ""
-              ],
-              "query": [
-                {
-                  "key": "fecha_desde",
-                  "value": "2026-01-01"
-                },
-                {
-                  "key": "min_inscritos",
-                  "value": "3"
-                }
-              ]
-            }
-          }
-        },
-        {
-          "name": "Detalle de torneo (con inscritos)",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Token {{token_jugador}}"
-              }
-            ],
-            "url": "{{base_url}}/torneos/{{torneo_id}}/"
-          }
-        },
-        {
-          "name": "Inscritos de un torneo",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Token {{token_jugador}}"
-              }
-            ],
-            "url": "{{base_url}}/torneos/{{torneo_id}}/inscritos/"
-          }
-        },
-        {
-          "name": "Videojuegos",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Token {{token_jugador}}"
-              }
-            ],
-            "url": "{{base_url}}/videojuegos/"
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.collectionVariables.set('torneo_id', pm.response.json().id);"
+            ]
           }
         }
       ]
     },
     {
-      "name": "3. Torneos (administrador)",
-      "item": [
-        {
-          "name": "Crear torneo",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test('201 Created', () => pm.response.to.have.status(201));",
-                  "pm.collectionVariables.set('torneo_id', pm.response.json().id);"
-                ]
-              }
-            }
-          ],
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Token {{token_admin}}"
-              },
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"nombre\": \"Torneo creado desde Postman\",\n  \"videojuego\": {{videojuego_id}},\n  \"fecha\": \"2026-12-15T19:00:00-03:00\",\n  \"max_participantes\": 8,\n  \"descripcion\": \"Creado vía API REST\"\n}"
-            },
-            "url": "{{base_url}}/torneos/"
+      "name": "Detalle de torneo",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Token {{token_jugador}}"
           }
-        },
-        {
-          "name": "Actualizar torneo (PATCH)",
-          "request": {
-            "method": "PATCH",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Token {{token_admin}}"
-              },
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"descripcion\": \"Descripción actualizada\",\n  \"max_participantes\": 16\n}"
-            },
-            "url": "{{base_url}}/torneos/{{torneo_id}}/"
-          }
-        },
-        {
-          "name": "Validación: datos inválidos (400)",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Token {{token_admin}}"
-              },
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"nombre\": \"abc\",\n  \"videojuego\": {{videojuego_id}},\n  \"fecha\": \"2020-01-01T10:00:00Z\",\n  \"max_participantes\": 500\n}"
-            },
-            "url": "{{base_url}}/torneos/"
-          }
-        },
-        {
-          "name": "Validación: pasar a En Curso sin jugadores (400)",
-          "request": {
-            "method": "PATCH",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Token {{token_admin}}"
-              },
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"estado\": \"EN_CURSO\"\n}"
-            },
-            "url": "{{base_url}}/torneos/{{torneo_id}}/"
-          }
-        },
-        {
-          "name": "Informes y métricas",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Token {{token_admin}}"
-              }
-            ],
-            "url": "{{base_url}}/informes/"
-          }
-        }
-      ]
+        ],
+        "url": "{{base_url}}/torneos/{{torneo_id}}/"
+      }
     },
     {
-      "name": "4. Inscripciones (jugador)",
-      "item": [
-        {
-          "name": "Inscribirse en el torneo",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Token {{token_jugador}}"
-              }
-            ],
-            "url": "{{base_url}}/torneos/{{torneo_id}}/inscripcion/"
+      "name": "Actualizar torneo (admin)",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Token {{token_admin}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
           }
-        },
-        {
-          "name": "Inscribirse otra vez (400: ya inscrito)",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Token {{token_jugador}}"
-              }
-            ],
-            "url": "{{base_url}}/torneos/{{torneo_id}}/inscripcion/"
-          }
-        },
-        {
-          "name": "Mis inscripciones",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Token {{token_jugador}}"
-              }
-            ],
-            "url": "{{base_url}}/inscripciones/"
-          }
-        },
-        {
-          "name": "Cancelar inscripción",
-          "request": {
-            "method": "DELETE",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Token {{token_jugador}}"
-              }
-            ],
-            "url": "{{base_url}}/torneos/{{torneo_id}}/inscripcion/"
-          }
+        ],
+        "url": "{{base_url}}/torneos/{{torneo_id}}/",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"max_participantes\": 16,\n  \"estado\": \"DISPONIBLE\"\n}"
         }
-      ]
+      }
     },
     {
-      "name": "5. Seguridad y errores",
-      "item": [
-        {
-          "name": "Sin token (401)",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": "{{base_url}}/torneos/"
+      "name": "Datos inválidos (400)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Token {{token_admin}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
           }
-        },
-        {
-          "name": "Jugador intenta crear torneo (403)",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Token {{token_jugador}}"
-              },
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"nombre\": \"Intento no autorizado\",\n  \"videojuego\": {{videojuego_id}},\n  \"fecha\": \"2026-12-20T19:00:00-03:00\",\n  \"max_participantes\": 8\n}"
-            },
-            "url": "{{base_url}}/torneos/"
-          }
-        },
-        {
-          "name": "Jugador pide informes (403)",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Token {{token_jugador}}"
-              }
-            ],
-            "url": "{{base_url}}/informes/"
-          }
-        },
-        {
-          "name": "Torneo inexistente (404)",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Token {{token_jugador}}"
-              }
-            ],
-            "url": "{{base_url}}/torneos/99999/"
-          }
-        },
-        {
-          "name": "Eliminar torneo (admin, 204)",
-          "request": {
-            "method": "DELETE",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Token {{token_admin}}"
-              }
-            ],
-            "url": "{{base_url}}/torneos/{{torneo_id}}/"
-          }
+        ],
+        "url": "{{base_url}}/torneos/",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nombre\": \"abc\",\n  \"videojuego\": {{videojuego_id}},\n  \"fecha\": \"2020-01-01T10:00:00Z\",\n  \"max_participantes\": 500,\n  \"descripcion\": \"Creado vía API\"\n}"
         }
-      ]
+      }
+    },
+    {
+      "name": "Inscribirse (jugador, 201)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Token {{token_jugador}}"
+          }
+        ],
+        "url": "{{base_url}}/torneos/{{torneo_id}}/inscribirse/"
+      }
+    },
+    {
+      "name": "Inscribirse otra vez (400)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Token {{token_jugador}}"
+          }
+        ],
+        "url": "{{base_url}}/torneos/{{torneo_id}}/inscribirse/"
+      }
+    },
+    {
+      "name": "Jugador intenta crear (403)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Token {{token_jugador}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{base_url}}/torneos/",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nombre\": \"Torneo creado desde Postman\",\n  \"videojuego\": {{videojuego_id}},\n  \"fecha\": \"2026-12-15T19:00:00-03:00\",\n  \"max_participantes\": 8,\n  \"descripcion\": \"Creado vía API\"\n}"
+        }
+      }
+    },
+    {
+      "name": "Sin token (401)",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{base_url}}/torneos/"
+      }
+    },
+    {
+      "name": "Torneo inexistente (404)",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Token {{token_jugador}}"
+          }
+        ],
+        "url": "{{base_url}}/torneos/99999/"
+      }
+    },
+    {
+      "name": "Eliminar torneo (admin, 204)",
+      "request": {
+        "method": "DELETE",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Token {{token_admin}}"
+          }
+        ],
+        "url": "{{base_url}}/torneos/{{torneo_id}}/"
+      }
     }
   ]
 }

@@ -1,7 +1,0 @@
-{% extends 'base.html' %}
-
-{% block titulo %}Solicitud inválida{% endblock %}
-
-{% block contenido %}
-  {% include 'includes/error.html' with codigo='400' icono='bi-exclamation-octagon' titulo='Solicitud inválida' mensaje='Los datos enviados no son válidos.' %}
-{% endblock %}

@@ -10,8 +10,7 @@ def solo_admin(vista):
     @wraps(vista)
     @login_required
     def envoltura(request, *args, **kwargs):
-        perfil = getattr(request.user, 'perfil', None)
-        if not (perfil and perfil.es_admin):
+        if not request.user.perfil.es_admin:
             raise PermissionDenied('Solo los administradores pueden realizar esta acción.')
         return vista(request, *args, **kwargs)
 

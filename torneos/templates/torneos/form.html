@@ -4,34 +4,15 @@
 
 {% block contenido %}
 <div class="container py-4">
-  <div class="gz-card p-4 p-md-5 mx-auto" style="max-width: 760px;">
-    <h1 class="h2 mb-1">{{ titulo }}</h1>
-    <p class="text-secondary mb-4">Los campos con <span class="text-danger">*</span> son obligatorios.</p>
-
-    {% if form.non_field_errors %}
-      <div class="alert alert-danger">
-        {% for error in form.non_field_errors %}<div>{{ error }}</div>{% endfor %}
-      </div>
-    {% endif %}
-
+  <div class="gz-card p-4 p-md-5 mx-auto" style="max-width: 720px;">
+    <h1 class="h2 mb-4">{{ titulo }}</h1>
     <form method="post" novalidate>
       {% csrf_token %}
-      {% include 'includes/campo.html' with campo=form.nombre %}
-      <div class="row">
-        <div class="col-md-6">{% include 'includes/campo.html' with campo=form.videojuego %}</div>
-        <div class="col-md-6">{% include 'includes/campo.html' with campo=form.fecha %}</div>
-        <div class="col-md-6">{% include 'includes/campo.html' with campo=form.max_participantes %}</div>
-        {% if form.estado %}
-          <div class="col-md-6">{% include 'includes/campo.html' with campo=form.estado %}</div>
-        {% endif %}
-      </div>
-      {% include 'includes/campo.html' with campo=form.descripcion %}
-
-      <div class="d-flex flex-wrap gap-2 mt-4">
-        <button type="submit" class="btn btn-gz"><i class="bi bi-check-lg"></i> Guardar</button>
-        <a href="{% if torneo %}{% url 'torneos:detalle' torneo.pk %}{% else %}{% url 'torneos:lista' %}{% endif %}"
-           class="btn btn-gz-outline">Cancelar</a>
-      </div>
+      {% for campo in form %}
+        {% include 'includes/campo.html' %}
+      {% endfor %}
+      <button type="submit" class="btn btn-gz"><i class="bi bi-check-lg"></i> Guardar</button>
+      <a href="{% url 'torneos:lista' %}" class="btn btn-gz-outline">Cancelar</a>
     </form>
   </div>
 </div>

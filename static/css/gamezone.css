@@ -212,17 +212,6 @@ a.gz-card:hover { transform: translateY(-2px); }
   50% { opacity: .25; }
 }
 
-/* ---------- Secciones ---------- */
-.gz-seccion-titulo {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 1rem;
-  margin-bottom: 1rem;
-}
-
-.gz-seccion-titulo h2 { font-size: 1.6rem; margin: 0; }
-
 .gz-vacio {
   padding: 2.5rem 1rem;
   text-align: center;
@@ -257,39 +246,3 @@ a.gz-card:hover { transform: translateY(-2px); }
 @media (prefers-reduced-motion: reduce) {
   * { transition: none !important; animation: none !important; }
 }
-
-/* ---------- Informes: barras y medidores ---------- */
-.gz-barras { list-style: none; padding: 0; margin: 0; display: grid; gap: .85rem; }
-
-.gz-barra {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  gap: .3rem .75rem;
-  align-items: center;
-  border-radius: 8px;
-  padding: .15rem .25rem;
-}
-
-.gz-barra:hover { background: var(--gz-surface-2); }
-.gz-barra .etiqueta { font-size: .9rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.gz-barra .etiqueta small { color: var(--gz-muted); }
-.gz-barra .valor { font-variant-numeric: tabular-nums; font-size: .9rem; color: var(--gz-text); }
-.gz-barra .valor small { color: var(--gz-muted); }
-
-.gz-barra .pista {
-  grid-column: 1 / -1;
-  height: 10px;
-  background: var(--gz-surface-2);
-  border-radius: 4px;
-  overflow: hidden;
-}
-
-.gz-barra .relleno {
-  height: 100%;
-  min-width: 2px;
-  background: var(--gz-accent);
-  border-radius: 0 4px 4px 0;
-}
-
-.gz-ranking td, .gz-ranking th { font-variant-numeric: tabular-nums; }
-.gz-medalla { width: 1.6rem; display: inline-block; text-align: center; }

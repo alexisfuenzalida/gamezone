@@ -30,15 +30,9 @@
                href="{% url 'torneos:inicio' %}"><i class="bi bi-house"></i> Inicio</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link {% if request.resolver_match.app_name == 'torneos' and request.resolver_match.url_name not in 'inicio mis_torneos informes' %}active{% endif %}"
+            <a class="nav-link {% if request.resolver_match.app_name == 'torneos' and request.resolver_match.url_name != 'inicio' and request.resolver_match.url_name != 'informes' %}active{% endif %}"
                href="{% url 'torneos:lista' %}"><i class="bi bi-trophy"></i> Torneos</a>
           </li>
-          {% if user.is_authenticated and not user|es_admin %}
-            <li class="nav-item">
-              <a class="nav-link {% if request.resolver_match.url_name == 'mis_torneos' %}active{% endif %}"
-                 href="{% url 'torneos:mis_torneos' %}"><i class="bi bi-controller"></i> Mis torneos</a>
-            </li>
-          {% endif %}
           {% if user|es_admin %}
             <li class="nav-item">
               <a class="nav-link {% if request.resolver_match.url_name == 'informes' %}active{% endif %}"
@@ -54,7 +48,7 @@
           {% if user.is_authenticated %}
             <li class="nav-item d-flex align-items-center gap-2 py-2 py-lg-0">
               <i class="bi bi-person-circle"></i>
-              <span>{{ user.perfil|default:user.username }}</span>
+              <span>{{ user.username }}</span>
               <span class="gz-rol">{{ user.perfil.get_rol_display }}</span>
             </li>
             <li class="nav-item">

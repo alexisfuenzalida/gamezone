@@ -5,127 +5,62 @@
 
 {% block contenido %}
 <div class="container py-4">
-  <nav aria-label="breadcrumb">
-    <ol class="breadcrumb small">
-      <li class="breadcrumb-item"><a href="{% url 'torneos:lista' %}">Torneos</a></li>
-      <li class="breadcrumb-item active" aria-current="page">{{ torneo.nombre }}</li>
-    </ol>
-  </nav>
-
   <div class="row g-4">
     <div class="col-lg-8">
       <div class="gz-card p-4 h-100">
-        <div class="d-flex flex-wrap justify-content-between align-items-start gap-2 mb-2">
+        <div class="d-flex justify-content-between align-items-start gap-2">
           <span class="gz-torneo p-0"><span class="juego">{{ torneo.videojuego }}</span></span>
           <span class="gz-estado {{ torneo.estado|clase_estado }}">{{ torneo.get_estado_display }}</span>
         </div>
-        <h1 class="h2">{{ torneo.nombre }}</h1>
+        <h1 class="h2 mt-2">{{ torneo.nombre }}</h1>
         <p class="text-secondary">{{ torneo.descripcion|default:"Sin descripción."|linebreaksbr }}</p>
-
-        <dl class="row mb-0 small">
-          <dt class="col-5 col-sm-4 text-secondary fw-normal">Fecha</dt>
-          <dd class="col-7 col-sm-8">{{ torneo.fecha|date:"l d \d\e F Y, H:i" }}</dd>
-          <dt class="col-5 col-sm-4 text-secondary fw-normal">Participantes</dt>
-          <dd class="col-7 col-sm-8">{{ torneo.num_inscritos }} de {{ torneo.max_participantes }}
-            ({{ torneo.cupos_disponibles }} cupo{{ torneo.cupos_disponibles|pluralize }} libre{{ torneo.cupos_disponibles|pluralize }})</dd>
-          <dt class="col-5 col-sm-4 text-secondary fw-normal">Creado por</dt>
-          <dd class="col-7 col-sm-8">{{ torneo.creado_por.perfil|default:"—" }}</dd>
-        </dl>
-
-        <div class="gz-progress mt-3"><div style="width: {{ torneo.num_inscritos|porcentaje:torneo.max_participantes }}%"></div></div>
+        <p class="mb-1"><i class="bi bi-calendar-event"></i> {{ torneo.fecha|date:"l d \d\e F Y, H:i" }}</p>
+        <p class="mb-3"><i class="bi bi-people"></i> {{ torneo.num_inscritos }} de {{ torneo.max_participantes }} inscritos
+          ({{ torneo.cupos_disponibles }} cupos libres)</p>
+        <div class="gz-progress"><div style="width: {{ torneo.num_inscritos|porcentaje:torneo.max_participantes }}%"></div></div>
       </div>
     </div>
 
     <div class="col-lg-4">
       <div class="gz-card p-4 h-100 d-flex flex-column gap-2">
-        <h2 class="h5 mb-2">Acciones</h2>
+        <h2 class="h5">Acciones</h2>
         {% if user|es_admin %}
-          {% if torneo.admite_resultados %}
-            <a href="{% url 'torneos:resultados' torneo.pk %}" class="btn btn-gz"><i class="bi bi-trophy"></i> Registrar resultados</a>
-          {% endif %}
           <a href="{% url 'torneos:editar' torneo.pk %}" class="btn btn-gz-outline"><i class="bi bi-pencil"></i> Editar torneo / estado</a>
-          {% if torneo.estado != 'EN_CURSO' %}
-            <a href="{% url 'torneos:eliminar' torneo.pk %}" class="btn btn-outline-danger"><i class="bi bi-trash"></i> Eliminar</a>
-          {% endif %}
+          <a href="{% url 'torneos:resultados' torneo.pk %}" class="btn btn-gz-outline"><i class="bi bi-trophy"></i> Registrar resultados</a>
+          <a href="{% url 'torneos:eliminar' torneo.pk %}" class="btn btn-outline-danger"><i class="bi bi-trash"></i> Eliminar</a>
+        {% elif inscrito %}
+          <div class="alert alert-success py-2 mb-0"><i class="bi bi-check-circle"></i> Estás inscrito en este torneo.</div>
         {% elif user.is_authenticated %}
-          {% if mi_inscripcion %}
-            <div class="alert alert-success py-2 mb-1"><i class="bi bi-check-circle"></i> Estás inscrito en este torneo.</div>
-            {% if torneo.estado == 'DISPONIBLE' or torneo.estado == 'COMPLETO' %}
-              <form method="post" action="{% url 'torneos:cancelar_inscripcion' torneo.pk %}"
-                    onsubmit="return confirm('¿Seguro que quieres cancelar tu inscripción?');">
-                {% csrf_token %}
-                <button type="submit" class="btn btn-outline-danger w-100"><i class="bi bi-x-circle"></i> Cancelar inscripción</button>
-              </form>
-            {% endif %}
-          {% elif torneo.acepta_inscripciones %}
-            <form method="post" action="{% url 'torneos:inscribirse' torneo.pk %}">
-              {% csrf_token %}
-              <button type="submit" class="btn btn-gz w-100"><i class="bi bi-controller"></i> Inscribirme</button>
-            </form>
-            <span class="text-secondary small">Quedan {{ torneo.cupos_disponibles }} cupo{{ torneo.cupos_disponibles|pluralize }}.</span>
-          {% else %}
-            <p class="text-secondary small mb-0"><i class="bi bi-lock"></i> Inscripciones cerradas
-              {% if torneo.estado == 'COMPLETO' %}(sin cupos){% elif torneo.estado == 'DISPONIBLE' %}(el torneo ya comenzó){% endif %}.</p>
-          {% endif %}
+          <form method="post" action="{% url 'torneos:inscribirse' torneo.pk %}">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-gz w-100"><i class="bi bi-controller"></i> Inscribirme</button>
+          </form>
         {% else %}
-          <p class="text-secondary small mb-0"><a href="{% url 'login' %}?next={{ request.path|urlencode }}">Ingresa</a> o
-            <a href="{% url 'registro' %}">crea una cuenta</a> para inscribirte.</p>
+          <p class="text-secondary small mb-0"><a href="{% url 'login' %}?next={{ request.path }}">Ingresa</a> para inscribirte.</p>
         {% endif %}
-        <a href="{% url 'torneos:lista' %}" class="btn btn-link text-secondary mt-auto"><i class="bi bi-arrow-left"></i> Volver al listado</a>
       </div>
     </div>
   </div>
 
-  <section class="mt-4">
-    <div class="gz-seccion-titulo">
-      <h2>Jugadores inscritos</h2>
-      <span class="text-secondary small">{{ torneo.num_inscritos }} / {{ torneo.max_participantes }}</span>
-    </div>
-
-    {% if inscripciones %}
-      <div class="gz-card table-responsive">
-        <table class="table table-hover align-middle mb-0" style="--bs-table-bg: transparent;">
-          <thead>
-            <tr class="small text-secondary">
-              <th scope="col">#</th>
-              <th scope="col">Jugador</th>
-              <th scope="col">Inscrito el</th>
-              <th scope="col" class="text-end">Posición</th>
-              <th scope="col" class="text-end">Puntos</th>
-              <th scope="col" class="text-end d-none d-sm-table-cell">Ganadas / Jugadas</th>
-              {% if user|es_admin and torneo.estado != 'FINALIZADO' %}<th scope="col"><span class="visually-hidden">Acciones</span></th>{% endif %}
+  <h2 class="mt-4 mb-3">Jugadores inscritos</h2>
+  {% if inscripciones %}
+    <div class="gz-card table-responsive">
+      <table class="table align-middle mb-0" style="--bs-table-bg: transparent;">
+        <thead><tr class="small text-secondary"><th>Jugador</th><th>Inscrito el</th><th class="text-end">Posición</th><th class="text-end">Puntos</th></tr></thead>
+        <tbody>
+          {% for inscripcion in inscripciones %}
+            <tr>
+              <td>{{ inscripcion.jugador.username }}</td>
+              <td class="small text-secondary">{{ inscripcion.fecha_inscripcion|date:"d/m/Y H:i" }}</td>
+              <td class="text-end">{% if inscripcion.resultado %}#{{ inscripcion.resultado.posicion }}{% else %}—{% endif %}</td>
+              <td class="text-end">{{ inscripcion.resultado.puntos|default:"—" }}</td>
             </tr>
-          </thead>
-          <tbody>
-            {% for inscripcion in inscripciones %}
-              <tr>
-                <td class="text-secondary">{{ forloop.counter }}</td>
-                <td><i class="bi bi-person-circle text-secondary"></i> {{ inscripcion.jugador.perfil }}{% if inscripcion.jugador_id == user.id %} <span class="gz-rol ms-1">Tú</span>{% endif %}</td>
-                <td class="small text-secondary">{{ inscripcion.fecha_inscripcion|date:"d/m/Y H:i" }}</td>
-                {% with r=inscripcion.resultado %}
-                  <td class="text-end">{% if r %}{% if r.posicion == 1 %}<i class="bi bi-trophy-fill text-warning"></i> {% endif %}#{{ r.posicion }}{% else %}—{% endif %}</td>
-                  <td class="text-end">{{ r.puntos|default:"—" }}</td>
-                  <td class="text-end d-none d-sm-table-cell">{% if r %}{{ r.partidas_ganadas }} / {{ r.partidas_jugadas }}{% else %}—{% endif %}</td>
-                {% endwith %}
-                {% if user|es_admin and torneo.estado != 'FINALIZADO' %}
-                  <td class="text-end">
-                    <form method="post" action="{% url 'torneos:quitar_inscripcion' inscripcion.pk %}"
-                          onsubmit="return confirm('¿Quitar a {{ inscripcion.jugador.perfil|escapejs }} del torneo?');">
-                      {% csrf_token %}
-                      <button type="submit" class="btn btn-sm btn-link text-danger p-0" title="Quitar jugador" aria-label="Quitar a {{ inscripcion.jugador.perfil }}">
-                        <i class="bi bi-person-x"></i>
-                      </button>
-                    </form>
-                  </td>
-                {% endif %}
-              </tr>
-            {% endfor %}
-          </tbody>
-        </table>
-      </div>
-    {% else %}
-      <div class="gz-vacio"><i class="bi bi-people fs-2 d-block mb-2"></i>Aún no hay jugadores inscritos.</div>
-    {% endif %}
-  </section>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <div class="gz-vacio">Aún no hay jugadores inscritos.</div>
+  {% endif %}
 </div>
 {% endblock %}
