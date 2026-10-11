@@ -1,0 +1,130 @@
+{% extends 'base.html' %}
+{% load torneos_extras %}
+
+{% block titulo %}Inicio{% endblock %}
+
+{% block contenido %}
+<section class="gz-hero">
+  <div class="container">
+    <div class="row align-items-center g-4">
+      <div class="col-lg-7">
+        <h1>Compite. Gana. <span class="gz-gradient-text">Sube de nivel.</span></h1>
+        <p class="lead mt-3">
+          Inscríbete en torneos de tus videojuegos favoritos, sigue el estado de cada
+          competencia y revisa los resultados en un solo lugar.
+        </p>
+        <div class="d-flex flex-wrap gap-2 mt-4">
+          {% if not user.is_authenticated %}
+            <a href="{% url 'login' %}" class="btn btn-gz btn-lg"><i class="bi bi-controller"></i> Ingresar para competir</a>
+          {% endif %}
+          <a href="{% url 'torneos:lista' %}" class="btn btn-gz-outline btn-lg">Ver todos los torneos</a>
+        </div>
+      </div>
+
+      <div class="col-lg-5">
+        <div class="row g-3">
+          <div class="col-6">
+            <div class="gz-card gz-stat">
+              <div class="d-flex justify-content-between align-items-start mb-2">
+                <span class="etiqueta">Torneos totales</span>
+                <span class="icono"><i class="bi bi-trophy"></i></span>
+              </div>
+              <div class="valor">{{ resumen.total }}</div>
+            </div>
+          </div>
+          <div class="col-6">
+            <div class="gz-card gz-stat">
+              <div class="d-flex justify-content-between align-items-start mb-2">
+                <span class="etiqueta">Disponibles</span>
+                <span class="icono estado-disponible"><i class="bi bi-door-open"></i></span>
+              </div>
+              <div class="valor">{{ resumen.disponibles }}</div>
+            </div>
+          </div>
+          <div class="col-6">
+            <div class="gz-card gz-stat">
+              <div class="d-flex justify-content-between align-items-start mb-2">
+                <span class="etiqueta">En curso</span>
+                <span class="icono estado-en-curso"><i class="bi bi-broadcast"></i></span>
+              </div>
+              <div class="valor">{{ resumen.en_curso }}</div>
+            </div>
+          </div>
+          <div class="col-6">
+            <div class="gz-card gz-stat">
+              <div class="d-flex justify-content-between align-items-start mb-2">
+                <span class="etiqueta">Jugadores</span>
+                <span class="icono" style="color: var(--gz-accent-2)"><i class="bi bi-people"></i></span>
+              </div>
+              <div class="valor">{{ resumen.jugadores }}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+{% if en_curso %}
+<section class="container mb-5">
+  <div class="gz-seccion-titulo">
+    <h2><span class="gz-estado estado-en-curso me-2">EN VIVO</span> Torneos en curso</h2>
+  </div>
+  <div class="row g-3">
+    {% for torneo in en_curso %}
+      <div class="col-sm-6 col-lg-3">
+        <a href="{% url 'torneos:detalle' torneo.pk %}" class="gz-card gz-torneo text-decoration-none text-reset">
+          <span class="juego">{{ torneo.videojuego }}</span>
+          <h3>{{ torneo.nombre }}</h3>
+          <span class="meta mt-auto"><i class="bi bi-people"></i> {{ torneo.num_inscritos }} jugadores</span>
+        </a>
+      </div>
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
+
+<section class="container" id="proximos">
+  <div class="gz-seccion-titulo">
+    <h2>Próximos torneos</h2>
+    <a href="{% url 'torneos:lista' %}" class="small">Ver todos <i class="bi bi-arrow-right"></i></a>
+  </div>
+
+  {% if proximos %}
+    <div class="row g-3">
+      {% for torneo in proximos %}
+        <div class="col-md-6 col-lg-4">
+          <a href="{% url 'torneos:detalle' torneo.pk %}" class="gz-card gz-torneo text-decoration-none text-reset">
+            <div class="d-flex justify-content-between align-items-start gap-2">
+              <span class="juego">{{ torneo.videojuego }}</span>
+              <span class="gz-estado {{ torneo.estado|clase_estado }}">{{ torneo.get_estado_display }}</span>
+            </div>
+            <h3>{{ torneo.nombre }}</h3>
+            <p class="meta mb-3">
+              <i class="bi bi-calendar-event"></i> {{ torneo.fecha|date:"d M Y · H:i" }}
+            </p>
+            {% if torneo.descripcion %}
+              <p class="meta">{{ torneo.descripcion|truncatechars:110 }}</p>
+            {% endif %}
+            <div class="mt-auto">
+              <div class="d-flex justify-content-between small mb-1">
+                <span class="text-secondary">Inscritos</span>
+                <span>{{ torneo.num_inscritos }} / {{ torneo.max_participantes }}</span>
+              </div>
+              <div class="gz-progress" role="progressbar" aria-label="Cupos ocupados"
+                   aria-valuenow="{{ torneo.num_inscritos|porcentaje:torneo.max_participantes }}" aria-valuemin="0" aria-valuemax="100">
+                <div style="width: {{ torneo.num_inscritos|porcentaje:torneo.max_participantes }}%"></div>
+              </div>
+            </div>
+          </a>
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="gz-vacio">
+      <i class="bi bi-calendar-x fs-2 d-block mb-2"></i>
+      No hay torneos próximos por ahora. ¡Vuelve pronto!
+    </div>
+  {% endif %}
+</section>
+{% endblock %}

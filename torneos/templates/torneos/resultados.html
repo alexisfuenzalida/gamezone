@@ -1,0 +1,73 @@
+{% extends 'base.html' %}
+{% load torneos_extras %}
+
+{% block titulo %}Resultados · {{ torneo.nombre }}{% endblock %}
+
+{% block contenido %}
+<div class="container py-4">
+  <nav aria-label="breadcrumb">
+    <ol class="breadcrumb small">
+      <li class="breadcrumb-item"><a href="{% url 'torneos:lista' %}">Torneos</a></li>
+      <li class="breadcrumb-item"><a href="{% url 'torneos:detalle' torneo.pk %}">{{ torneo.nombre }}</a></li>
+      <li class="breadcrumb-item active" aria-current="page">Resultados</li>
+    </ol>
+  </nav>
+
+  <div class="gz-seccion-titulo flex-wrap">
+    <div>
+      <h1 class="h2 mb-0">Registrar resultados</h1>
+      <span class="text-secondary small">{{ torneo.nombre }} · {{ torneo.videojuego }}</span>
+    </div>
+    <span class="gz-estado {{ torneo.estado|clase_estado }}">{{ torneo.get_estado_display }}</span>
+  </div>
+
+  {% if filas %}
+    <form method="post" novalidate>
+      {% csrf_token %}
+      <div class="gz-card table-responsive">
+        <table class="table align-middle mb-0" style="--bs-table-bg: transparent; min-width: 720px;">
+          <thead>
+            <tr class="small text-secondary">
+              <th scope="col">Jugador</th>
+              <th scope="col" style="width: 110px;">Posición *</th>
+              <th scope="col" style="width: 110px;">Puntos</th>
+              <th scope="col" style="width: 110px;">Ganadas</th>
+              <th scope="col" style="width: 110px;">Jugadas</th>
+              <th scope="col">Observación</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for inscripcion, form in filas %}
+              <tr>
+                <td><i class="bi bi-person-circle text-secondary"></i> {{ inscripcion.jugador.perfil }}</td>
+                {% for campo in form %}
+                  <td>
+                    {{ campo }}
+                    {% for error in campo.errors %}<div class="invalid-feedback d-block small">{{ error }}</div>{% endfor %}
+                  </td>
+                {% endfor %}
+              </tr>
+              {% if form.non_field_errors %}
+                <tr><td colspan="6" class="text-danger small pt-0"><i class="bi bi-exclamation-circle"></i> {{ form.non_field_errors|join:" " }}</td></tr>
+              {% endif %}
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      <div class="d-flex flex-wrap align-items-center gap-3 mt-4">
+        <button type="submit" class="btn btn-gz"><i class="bi bi-check-lg"></i> Guardar resultados</button>
+        {% if torneo.estado == 'EN_CURSO' %}
+          <div class="form-check mb-0">
+            <input class="form-check-input" type="checkbox" name="finalizar" value="1" id="finalizar">
+            <label class="form-check-label" for="finalizar">Marcar el torneo como <strong>Finalizado</strong> al guardar</label>
+          </div>
+        {% endif %}
+        <a href="{% url 'torneos:detalle' torneo.pk %}" class="btn btn-gz-outline ms-md-auto">Cancelar</a>
+      </div>
+    </form>
+  {% else %}
+    <div class="gz-vacio">Este torneo no tiene jugadores inscritos.</div>
+  {% endif %}
+</div>
+{% endblock %}

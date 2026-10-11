@@ -1,0 +1,13 @@
+{# Bloque común de las páginas de error: icono, código, título, mensaje y acciones #}
+<div class="container py-5">
+  <div class="gz-card mx-auto p-4 p-md-5 text-center" style="max-width: 560px;">
+    <i class="bi {{ icono }} fs-1" style="color: var(--gz-accent-2);"></i>
+    <p class="gz-title gz-gradient-text mb-0 mt-2" style="font-size: 4rem; line-height: 1;">{{ codigo }}</p>
+    <h1 class="h3 mt-2">{{ titulo }}</h1>
+    <p class="text-secondary mb-4">{{ mensaje }}</p>
+    <div class="d-flex flex-wrap justify-content-center gap-2">
+      <a href="{% url 'torneos:inicio' %}" class="btn btn-gz"><i class="bi bi-house"></i> Ir al inicio</a>
+      <a href="{% url 'torneos:lista' %}" class="btn btn-gz-outline"><i class="bi bi-trophy"></i> Ver torneos</a>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,7 @@
+{% extends 'base.html' %}
+
+{% block titulo %}Acceso denegado{% endblock %}
+
+{% block contenido %}
+  {% include 'includes/error.html' with codigo='403' icono='bi-shield-lock' titulo='Acceso denegado' mensaje=exception|default:'No tienes permisos para ver esta sección.' %}
+{% endblock %}

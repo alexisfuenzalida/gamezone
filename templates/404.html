@@ -1,0 +1,7 @@
+{% extends 'base.html' %}
+
+{% block titulo %}Página no encontrada{% endblock %}
+
+{% block contenido %}
+  {% include 'includes/error.html' with codigo='404' icono='bi-joystick' titulo='Game over: página no encontrada' mensaje='El torneo, inscripción o página que buscas no existe o fue eliminado.' %}
+{% endblock %}

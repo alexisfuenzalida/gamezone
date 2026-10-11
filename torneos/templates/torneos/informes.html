@@ -1,0 +1,171 @@
+{% extends 'base.html' %}
+{% load torneos_extras %}
+
+{% block titulo %}Informes{% endblock %}
+
+{% block contenido %}
+<div class="container py-4">
+  <div class="gz-seccion-titulo flex-wrap">
+    <div>
+      <h1 class="h2 mb-0">Informes y métricas</h1>
+      <span class="text-secondary small">Actualizado al {% now "d/m/Y H:i" %}</span>
+    </div>
+    <a href="{% url 'api:informes' %}" class="btn btn-gz-outline btn-sm"><i class="bi bi-braces"></i> Ver en JSON</a>
+  </div>
+
+  {# ---------- Cifras principales ---------- #}
+  <div class="row g-3 mb-4">
+      {% for etiqueta, valor, icono in kpis %}
+        <div class="col-6 col-lg-3">
+          <div class="gz-card gz-stat">
+            <div class="d-flex justify-content-between align-items-start mb-2">
+              <span class="etiqueta">{{ etiqueta }}</span>
+              <span class="icono"><i class="bi {{ icono }}"></i></span>
+            </div>
+            <div class="valor">{{ valor }}</div>
+          </div>
+        </div>
+      {% endfor %}
+  </div>
+
+  <div class="d-flex flex-wrap gap-2 mb-4" aria-label="Torneos por estado">
+    {% for e in resumen.por_estado %}
+      <span class="gz-card px-3 py-2 d-inline-flex align-items-center gap-2">
+        <span class="gz-estado {{ e.estado|clase_estado }}">{{ e.nombre }}</span>
+        <strong>{{ e.total }}</strong>
+      </span>
+    {% endfor %}
+  </div>
+
+  <div class="row g-4">
+    {# ---------- Mayor participación ---------- #}
+    <div class="col-lg-6">
+      <section class="gz-card p-4 h-100">
+        <h2 class="h5 mb-1">Torneos con mayor participación</h2>
+        <p class="text-secondary small mb-3">Top 5 por jugadores inscritos.</p>
+        {% if mayor_participacion and max_participacion %}
+          <ol class="gz-barras">
+            {% for t in mayor_participacion %}
+              <li class="gz-barra" title="{{ t.nombre }}: {{ t.inscritos }} inscritos">
+                <span class="etiqueta">{{ forloop.counter }}. <a href="{% url 'torneos:detalle' t.id %}" class="link-light">{{ t.nombre }}</a> <small>· {{ t.videojuego }}</small></span>
+                <span class="valor">{{ t.inscritos }} <small>jugador{{ t.inscritos|pluralize:"es" }}</small></span>
+                <div class="pista" aria-hidden="true"><div class="relleno" style="width: {{ t.inscritos|porcentaje:max_participacion }}%"></div></div>
+              </li>
+            {% endfor %}
+          </ol>
+        {% else %}
+          <div class="gz-vacio">Aún no hay inscripciones.</div>
+        {% endif %}
+      </section>
+    </div>
+
+    {# ---------- Por videojuego ---------- #}
+    <div class="col-lg-6">
+      <section class="gz-card p-4 h-100">
+        <h2 class="h5 mb-1">Participación por videojuego</h2>
+        <p class="text-secondary small mb-3">Inscripciones totales en los torneos de cada juego.</p>
+        {% if por_videojuego and max_videojuego %}
+          <ul class="gz-barras">
+            {% for v in por_videojuego %}
+              <li class="gz-barra" title="{{ v.videojuego }}: {{ v.inscritos }} inscripciones en {{ v.torneos }} torneo{{ v.torneos|pluralize }}">
+                <span class="etiqueta">{{ v.videojuego }} <small>· {{ v.torneos }} torneo{{ v.torneos|pluralize }}</small></span>
+                <span class="valor">{{ v.inscritos }}</span>
+                <div class="pista" aria-hidden="true"><div class="relleno" style="width: {{ v.inscritos|porcentaje:max_videojuego }}%"></div></div>
+              </li>
+            {% endfor %}
+          </ul>
+        {% else %}
+          <div class="gz-vacio">Aún no hay inscripciones.</div>
+        {% endif %}
+      </section>
+    </div>
+
+    {# ---------- Ranking de jugadores ---------- #}
+    <div class="col-12">
+      <section class="gz-card p-4">
+        <h2 class="h5 mb-1">Jugadores con mejores resultados</h2>
+        <p class="text-secondary small mb-3">Ordenado por puntos totales; en empate, por victorias y podios.</p>
+        {% if ranking_jugadores %}
+          <div class="table-responsive">
+            <table class="table align-middle mb-0 gz-ranking" style="--bs-table-bg: transparent;">
+              <thead>
+                <tr class="small text-secondary">
+                  <th scope="col">#</th>
+                  <th scope="col">Jugador</th>
+                  <th scope="col" class="text-end">Puntos</th>
+                  <th scope="col" class="text-end">Torneos</th>
+                  <th scope="col" class="text-end">Victorias</th>
+                  <th scope="col" class="text-end">Podios</th>
+                  <th scope="col" class="text-end d-none d-md-table-cell">Partidas G/J</th>
+                  <th scope="col" class="text-end d-none d-md-table-cell">Efectividad</th>
+                  <th scope="col" class="text-end d-none d-md-table-cell">Pos. promedio</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for j in ranking_jugadores %}
+                  <tr>
+                    <td class="text-secondary">
+                      <span class="gz-medalla">{% if forloop.counter == 1 %}<i class="bi bi-trophy-fill text-warning" aria-label="Primer lugar"></i>{% else %}{{ forloop.counter }}{% endif %}</span>
+                    </td>
+                    <td>{{ j.jugador }}</td>
+                    <td class="text-end fw-semibold">{{ j.puntos }}</td>
+                    <td class="text-end">{{ j.torneos }}</td>
+                    <td class="text-end">{{ j.victorias }}</td>
+                    <td class="text-end">{{ j.podios }}</td>
+                    <td class="text-end d-none d-md-table-cell">{{ j.partidas_ganadas }} / {{ j.partidas_jugadas }}</td>
+                    <td class="text-end d-none d-md-table-cell">{{ j.efectividad }}%</td>
+                    <td class="text-end d-none d-md-table-cell">{{ j.posicion_promedio }}</td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        {% else %}
+          <div class="gz-vacio">Aún no hay resultados registrados.</div>
+        {% endif %}
+      </section>
+    </div>
+
+    {# ---------- Inscritos por torneo ---------- #}
+    <div class="col-12">
+      <section class="gz-card p-4">
+        <h2 class="h5 mb-1">Jugadores inscritos por torneo</h2>
+        <p class="text-secondary small mb-3">Inscritos sobre el máximo de participantes de cada torneo.</p>
+        {% if inscritos_por_torneo %}
+          <div class="table-responsive">
+            <table class="table align-middle mb-0 gz-ranking" style="--bs-table-bg: transparent;">
+              <thead>
+                <tr class="small text-secondary">
+                  <th scope="col" style="min-width: 160px;">Torneo</th>
+                  <th scope="col" class="d-none d-md-table-cell">Videojuego</th>
+                  <th scope="col">Estado</th>
+                  <th scope="col" class="text-end">Inscritos</th>
+                  <th scope="col" style="min-width: 140px;">Ocupación</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for t in inscritos_por_torneo %}
+                  <tr>
+                    <td><a href="{% url 'torneos:detalle' t.id %}" class="link-light">{{ t.nombre }}</a></td>
+                    <td class="d-none d-md-table-cell text-secondary">{{ t.videojuego }}</td>
+                    <td><span class="gz-estado {{ t.estado|clase_estado }}">{{ t.estado_display }}</span></td>
+                    <td class="text-end">{{ t.inscritos }} / {{ t.max_participantes }}</td>
+                    <td>
+                      <div class="d-flex align-items-center gap-2" title="{{ t.ocupacion }}% de ocupación">
+                        <div class="gz-barra p-0 flex-fill"><div class="pista" aria-hidden="true"><div class="relleno" style="width: {{ t.ocupacion }}%"></div></div></div>
+                        <span class="small text-secondary" style="width: 3rem; text-align: right;">{{ t.ocupacion }}%</span>
+                      </div>
+                    </td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        {% else %}
+          <div class="gz-vacio">No hay torneos registrados.</div>
+        {% endif %}
+      </section>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,7 @@
+{% extends 'base.html' %}
+
+{% block titulo %}Sesión expirada{% endblock %}
+
+{% block contenido %}
+  {% include 'includes/error.html' with codigo='403' icono='bi-hourglass-split' titulo='El formulario expiró' mensaje='Por seguridad no pudimos procesar el envío. Recarga la página e inténtalo nuevamente.' %}
+{% endblock %}
